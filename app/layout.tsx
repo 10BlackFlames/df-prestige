@@ -1,29 +1,24 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Inter } from "next/font/google";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+import { Geist, Geist_Mono } from "next/font/google";
+
 import "./globals.css";
 
-const inter = Inter({
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
 });
 
-const cormorant = Cormorant_Garamond({
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
-  variable: "--font-heading",
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: "DF Prestige",
-    template: "%s | DF Prestige",
-  },
-  description:
-    "Premium sneakers, luxury wears, and street fashion with nationwide and international delivery.",
+  title: "DF Prestige",
+  description: "Luxury sneakers and fashion.",
 };
 
 export default function RootLayout({
@@ -34,14 +29,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${cormorant.variable} h-full scroll-smooth`}
+      className={`${geistSans.variable} ${geistMono.variable}`}
     >
-      <body className="min-h-full bg-background text-foreground font-sans flex flex-col">
+      <body className="min-h-screen bg-background text-foreground">
         <Header />
 
-        <main className="flex-1">
-          {children}
-        </main>
+        <main>{children}</main>
 
         <Footer />
       </body>

@@ -16,7 +16,6 @@
   --card: #222222;
 
   --border: #333333;
-
   --muted: #b3b3b3;
 
   --success: #22c55e;
@@ -24,8 +23,8 @@
   --danger: #ef4444;
 
   /* Typography */
-  --font-body: var(--font-inter);
-  --font-heading: var(--font-heading);
+  --font-body: var(--font-geist-sans);
+  --font-heading: var(--font-geist-sans);
 
   /* Layout */
   --radius: 12px;
@@ -33,6 +32,7 @@
 }
 
 @theme inline {
+  /* Colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
@@ -49,7 +49,12 @@
   --color-warning: var(--warning);
   --color-danger: var(--danger);
 
+  /* Fonts */
   --font-sans: var(--font-body);
+  --font-mono: var(--font-geist-mono);
+
+  /* Radius */
+  --radius-lg: var(--radius);
 }
 
 /* ==========================================
@@ -67,9 +72,13 @@ html {
 }
 
 body {
+  min-height: 100vh;
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body), sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
 }
 
 /* ==========================================
@@ -82,8 +91,13 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-heading), serif;
-  font-weight: 600;
+  font-family: var(--font-heading), sans-serif;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+p {
+  color: var(--muted);
 }
 
 a {
@@ -93,10 +107,100 @@ a {
 
 button {
   cursor: pointer;
+  font: inherit;
 }
 
-img {
+img,
+picture {
   display: block;
   max-width: 100%;
   height: auto;
+}
+
+/* ==========================================
+   SELECTION
+========================================== */
+
+::selection {
+  background: var(--primary);
+  color: #111111;
+}
+
+/* ==========================================
+   SCROLLBAR
+========================================== */
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-hover);
+}
+
+/* ==========================================
+   UTILITIES
+========================================== */
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(
+      135deg,
+      #ffffff,
+      var(--primary)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .gold-border {
+    border: 1px solid rgba(200, 169, 106, 0.35);
+  }
+
+  .glass {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(14px);
+  }
+
+  .section-padding {
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
+
+  .container-width {
+    max-width: var(--container-width);
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+
+  .hover-lift {
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .surface {
+    background: var(--surface);
+  }
 }

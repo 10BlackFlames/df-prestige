@@ -1,49 +1,40 @@
 import Link from "next/link";
+import clsx from "clsx";
 import { ReactNode } from "react";
 
 interface ButtonProps {
+  href: string;
   children: ReactNode;
-  href?: string;
-  variant?: "primary" | "secondary";
-  type?: "button" | "submit";
-  onClick?: () => void;
+  variant?: "primary" | "secondary" | "outline";
+  className?: string;
 }
 
-const baseClasses =
-  "inline-flex items-center justify-center rounded-xl px-6 py-3 font-medium transition duration-300";
-
-const variants = {
-  primary:
-    "bg-primary text-black hover:bg-primary-hover",
-
-  secondary:
-    "border border-primary text-primary hover:bg-primary hover:text-black",
-};
-
 export default function Button({
-  children,
   href,
+  children,
   variant = "primary",
-  type = "button",
-  onClick,
+  className,
 }: ButtonProps) {
-  const className = `${baseClasses} ${variants[variant]}`;
-
-  if (href) {
-    return (
-      <Link href={href} className={className}>
-        {children}
-      </Link>
-    );
-  }
-
   return (
-    <button
-      type={type}
-      onClick={onClick}
-      className={className}
+    <Link
+      href={href}
+      className={clsx(
+        "inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold transition-all duration-300 hover:-translate-y-1 active:translate-y-0",
+        "focus:outline-none focus:ring-2 focus:ring-primary/50",
+        {
+          "bg-primary text-black hover:bg-primary-hover hover:-translate-y-0.5":
+            variant === "primary",
+
+          "border border-primary bg-transparent text-primary hover:bg-primary hover:text-black":
+            variant === "secondary",
+
+          "border border-border bg-card text-white hover:border-primary hover:text-primary":
+            variant === "outline",
+        },
+        className
+      )}
     >
       {children}
-    </button>
+    </Link>
   );
 }

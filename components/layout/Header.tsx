@@ -1,16 +1,9 @@
-import Container from "@/components/ui/Container";
-import Logo from "@/components/ui/Logo";
+import Navbar from "./Navbar";
 
 export default function Header() {
   return (
-    <header className="border-b border-border bg-background">
-      <Container className="flex h-20 items-center justify-between">
-        <Logo />
-
-        <p className="text-sm text-muted">
-          Step Into Luxury
-        </p>
-      </Container>
+    <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-xl">
+      <Navbar />
     </header>
   );
 }

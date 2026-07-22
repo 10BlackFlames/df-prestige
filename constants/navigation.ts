@@ -17,6 +17,6 @@ export const NAVIGATION = [
   },
   {
     name: "FAQs",
-    href: "/faq",
+    href: "/faqs",
   },
 ];
