@@ -1,4 +1,5 @@
 import { Product } from "@/types/product";
+import { prisma } from "@/lib/prisma";
 
 export const featuredProducts: Product[] = [
   {
