@@ -6,6 +6,110 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  phone     String?
+  role      UserRole @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+  reviews   Review[]
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  slug      String    @unique
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
+model Product {
+  id          String         @id @default(cuid())
+  name        String
+  slug        String         @unique
+  description String
+  price       Decimal
+  stock       Int
+  featured    Boolean        @default(false)
+  categoryId  String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  orderItems  OrderItem[]
+  category    Category       @relation(fields: [categoryId], references: [id])
+  images      ProductImage[]
+  sizes       ProductSize[]
+  reviews     Review[]
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  url       String
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model ProductSize {
+  id        String  @id @default(cuid())
+  size      String
+  quantity  Int
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Coupon {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  discount  Int
+  active    Boolean   @default(true)
+  expiresAt DateTime?
+}
+
+model Order {
+  id               String      @id @default(cuid())
+  userId           String?
+  status           OrderStatus @default(PENDING)
+  total            Decimal
+  createdAt        DateTime    @default(now())
+  address          String
+  city             String
+  customerEmail    String
+  customerName     String
+  customerPhone    String
+  notes            String?
+  paymentReference String?
+  postalCode       String?
+  state            String
+  updatedAt        DateTime    @updatedAt
+  user             User?       @relation(fields: [userId], references: [id])
+  items            OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Decimal
+  size      String?
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+}
+
 enum UserRole {
   CUSTOMER
   ADMIN
@@ -18,145 +122,4 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
-}
-
-model User {
-  id       String  @id @default(cuid())
-  name     String
-  email    String  @unique
-  password String
-  phone    String?
-
-  role UserRole @default(CUSTOMER)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  orders  Order[]
-  reviews Review[]
-}
-
-model Category {
-  id   String @id @default(cuid())
-  name String @unique
-  slug String @unique
-
-  products Product[]
-
-  createdAt DateTime @default(now())
-}
-
-model Product {
-  id          String @id @default(cuid())
-  name        String
-  slug        String @unique
-  description String
-
-  price Decimal
-  stock Int
-
-  featured Boolean @default(false)
-
-  categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
-
-  images     ProductImage[]
-  sizes      ProductSize[]
-  reviews    Review[]
-  orderItems OrderItem[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model ProductImage {
-  id String @id @default(cuid())
-
-  url String
-
-  productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-}
-
-model ProductSize {
-  id String @id @default(cuid())
-
-  size String
-
-  quantity Int
-
-  productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-}
-
-model Review {
-  id String @id @default(cuid())
-
-  rating  Int
-  comment String
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
-
-  createdAt DateTime @default(now())
-}
-
-model Coupon {
-  id String @id @default(cuid())
-
-  code String @unique
-
-  discount Int
-
-  active Boolean @default(true)
-
-  expiresAt DateTime?
-}
-
-model Order {
-  id String @id @default(cuid())
-
-  userId String?
-  user   User?   @relation(fields: [userId], references: [id])
-
-  status OrderStatus @default(PENDING)
-
-  total Decimal
-
-  customerName  String
-  customerEmail String
-  customerPhone String
-
-  address    String
-  city       String
-  state      String
-  postalCode String?
-
-  notes String?
-
-  paymentReference String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  items OrderItem[]
-}
-
-model OrderItem {
-  id String @id @default(cuid())
-
-  orderId String
-  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
-
-  quantity Int
-
-  price Decimal
-
-  size String?
 }

@@ -60,13 +60,13 @@ export default function Navbar() {
             )}
           </Link>
 
-          <button
-            type="button"
+          <Link
+            href="/account"
             className="hidden transition hover:text-primary md:block"
             aria-label="Account"
           >
             <User size={20} />
-          </button>
+          </Link>
 
           <button
             type="button"

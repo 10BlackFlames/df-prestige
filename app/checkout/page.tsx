@@ -49,7 +49,7 @@ export default function CheckoutPage() {
   }
 
   async function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>,
+    event: React.FormEvent<HTMLFormElement>
   ) {
     event.preventDefault();
 
@@ -62,7 +62,8 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/orders", {
+      // 1. Create the pending order
+      const orderResponse = await fetch("/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -88,22 +89,44 @@ export default function CheckoutPage() {
         }),
       });
 
-      const data = await response.json();
+      const orderData = await orderResponse.json();
 
-      if (!response.ok) {
+      if (!orderResponse.ok) {
         throw new Error(
-          data.error || "Unable to create order.",
+          orderData.error || "Unable to create order."
         );
       }
 
-      router.push(`/checkout/success?order=${data.orderId}`);
+      // 2. Initialize Paystack payment
+      const paymentResponse = await fetch(
+        "/api/payment/initialize",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            orderId: orderData.orderId,
+          }),
+        }
+      );
+
+      const paymentData = await paymentResponse.json();
+
+      if (!paymentResponse.ok || !paymentData.success) {
+        throw new Error(
+          paymentData.message || "Unable to initialize payment."
+        );
+      }
+
+      // 3. Redirect customer to Paystack
+      window.location.href = paymentData.authorizationUrl;
     } catch (error) {
       setError(
         error instanceof Error
           ? error.message
-          : "Something went wrong.",
+          : "Something went wrong."
       );
-    } finally {
       setLoading(false);
     }
   }
@@ -269,8 +292,8 @@ export default function CheckoutPage() {
             className="w-full rounded-xl bg-primary px-6 py-4 font-semibold text-black transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading
-              ? "Creating Order..."
-              : "Place Order"}
+              ? "Proceeding to Payment..."
+              : "Pay Now"}
           </button>
         </div>
 

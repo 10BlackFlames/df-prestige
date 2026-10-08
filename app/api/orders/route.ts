@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 interface OrderItemInput {
@@ -14,23 +15,19 @@ interface OrderRequest {
     email: string;
     phone: string;
   };
-
   delivery: {
     address: string;
     city: string;
     state: string;
     postalCode?: string;
   };
-
   notes?: string;
-
   items: OrderItemInput[];
 }
 
 export async function POST(request: Request) {
   try {
-    const body =
-      (await request.json()) as OrderRequest;
+    const body = (await request.json()) as OrderRequest;
 
     if (
       !body.customer?.name ||
@@ -39,10 +36,9 @@ export async function POST(request: Request) {
     ) {
       return NextResponse.json(
         {
-          error:
-            "Please provide your name, email and phone number.",
+          error: "Please provide your name, email and phone number.",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -53,29 +49,26 @@ export async function POST(request: Request) {
     ) {
       return NextResponse.json(
         {
-          error:
-            "Please provide your complete delivery address.",
+          error: "Please provide your complete delivery address.",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    if (
-      !Array.isArray(body.items) ||
-      body.items.length === 0
-    ) {
+    if (!Array.isArray(body.items) || body.items.length === 0) {
       return NextResponse.json(
         {
           error: "Your cart is empty.",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
+    // Get the currently logged-in customer, if there is one.
+    const currentUser = await getCurrentUser();
+
     const productIds = [
-      ...new Set(
-        body.items.map((item) => item.productId),
-      ),
+      ...new Set(body.items.map((item) => item.productId)),
     ];
 
     const products = await prisma.product.findMany({
@@ -92,15 +85,13 @@ export async function POST(request: Request) {
     if (products.length !== productIds.length) {
       return NextResponse.json(
         {
-          error:
-            "One or more products are no longer available.",
+          error: "One or more products are no longer available.",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     let total = 0;
-
     const orderItems = [];
 
     for (const item of body.items) {
@@ -112,13 +103,12 @@ export async function POST(request: Request) {
           {
             error: "Invalid product quantity.",
           },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
       const product = products.find(
-        (currentProduct) =>
-          currentProduct.id === item.productId,
+        (currentProduct) => currentProduct.id === item.productId
       );
 
       if (!product) {
@@ -126,13 +116,13 @@ export async function POST(request: Request) {
           {
             error: "Product not found.",
           },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
       if (item.size) {
         const productSize = product.sizes.find(
-          (size) => size.size === item.size,
+          (size) => size.size === item.size
         );
 
         if (!productSize) {
@@ -140,7 +130,7 @@ export async function POST(request: Request) {
             {
               error: `${product.name} is not available in size ${item.size}.`,
             },
-            { status: 400 },
+            { status: 400 }
           );
         }
 
@@ -149,7 +139,7 @@ export async function POST(request: Request) {
             {
               error: `Only ${productSize.quantity} of ${product.name} in size ${item.size} are available.`,
             },
-            { status: 400 },
+            { status: 400 }
           );
         }
       } else if (product.stock < item.quantity) {
@@ -157,12 +147,11 @@ export async function POST(request: Request) {
           {
             error: `Only ${product.stock} of ${product.name} are available.`,
           },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
-      const itemTotal =
-        Number(product.price) * item.quantity;
+      const itemTotal = Number(product.price) * item.quantity;
 
       total += itemTotal;
 
@@ -176,16 +165,18 @@ export async function POST(request: Request) {
 
     const order = await prisma.order.create({
       data: {
+        // Attach the order to the logged-in customer.
+        // Guest orders remain supported because this can be null.
+        userId: currentUser?.id ?? null,
+
         customerName: body.customer.name.trim(),
-        customerEmail:
-          body.customer.email.trim().toLowerCase(),
+        customerEmail: body.customer.email.trim().toLowerCase(),
         customerPhone: body.customer.phone.trim(),
 
         address: body.delivery.address.trim(),
         city: body.delivery.city.trim(),
         state: body.delivery.state.trim(),
-        postalCode:
-          body.delivery.postalCode?.trim() || null,
+        postalCode: body.delivery.postalCode?.trim() || null,
 
         notes: body.notes?.trim() || null,
 
@@ -202,17 +193,16 @@ export async function POST(request: Request) {
         success: true,
         orderId: order.id,
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error("ORDER_CREATION_ERROR", error);
 
     return NextResponse.json(
       {
-        error:
-          "Unable to create your order. Please try again.",
+        error: "Unable to create your order. Please try again.",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
