@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { Prisma } from "@prisma/client";
 
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -10,6 +11,20 @@ interface OrderDetailsPageProps {
     orderId: string;
   }>;
 }
+
+type OrderWithItems = Prisma.OrderGetPayload<{
+  include: {
+    items: {
+      include: {
+        product: {
+          include: {
+            images: true;
+          };
+        };
+      };
+    };
+  };
+}>;
 
 export default async function OrderDetailsPage({
   params,
@@ -22,7 +37,7 @@ export default async function OrderDetailsPage({
 
   const { orderId } = await params;
 
-  const order = await prisma.order.findFirst({
+  const order: OrderWithItems | null = await prisma.order.findFirst({
     where: {
       id: orderId,
       userId: user.id,
@@ -84,9 +99,7 @@ export default async function OrderDetailsPage({
 
           <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
             <section>
-              <h2 className="text-xl font-semibold">
-                Items
-              </h2>
+              <h2 className="text-xl font-semibold">Items</h2>
 
               <div className="mt-4 space-y-4">
                 {order.items.map((item) => (
@@ -120,9 +133,7 @@ export default async function OrderDetailsPage({
 
                         <p className="mt-3 font-semibold">
                           ₦
-                          {Number(item.price).toLocaleString(
-                            "en-NG"
-                          )}
+                          {Number(item.price).toLocaleString("en-NG")}
                         </p>
                       </div>
                     </div>
@@ -133,20 +144,13 @@ export default async function OrderDetailsPage({
 
             <aside className="space-y-6">
               <section className="rounded-2xl border border-border bg-card p-6">
-                <h2 className="text-xl font-semibold">
-                  Order Summary
-                </h2>
+                <h2 className="text-xl font-semibold">Order Summary</h2>
 
                 <div className="mt-5 flex items-center justify-between border-t border-border pt-5">
-                  <span className="text-muted">
-                    Total
-                  </span>
+                  <span className="text-muted">Total</span>
 
                   <span className="text-xl font-bold">
-                    ₦
-                    {Number(order.total).toLocaleString(
-                      "en-NG"
-                    )}
+                    ₦{Number(order.total).toLocaleString("en-NG")}
                   </span>
                 </div>
               </section>
@@ -159,34 +163,25 @@ export default async function OrderDetailsPage({
                 <div className="mt-5 space-y-3 text-sm">
                   <div>
                     <p className="text-muted">Name</p>
-                    <p className="mt-1">
-                      {order.customerName}
-                    </p>
+                    <p className="mt-1">{order.customerName}</p>
                   </div>
 
                   <div>
                     <p className="text-muted">Phone</p>
-                    <p className="mt-1">
-                      {order.customerPhone}
-                    </p>
+                    <p className="mt-1">{order.customerPhone}</p>
                   </div>
 
                   <div>
                     <p className="text-muted">Address</p>
-                    <p className="mt-1">
-                      {order.address}
-                    </p>
+                    <p className="mt-1">{order.address}</p>
                   </div>
 
                   <div>
-                    <p className="text-muted">
-                      Location
-                    </p>
+                    <p className="text-muted">Location</p>
+
                     <p className="mt-1">
                       {order.city}, {order.state}
-                      {order.postalCode
-                        ? ` ${order.postalCode}`
-                        : ""}
+                      {order.postalCode ? ` ${order.postalCode}` : ""}
                     </p>
                   </div>
                 </div>
